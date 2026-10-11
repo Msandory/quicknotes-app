@@ -6,7 +6,7 @@ const searchInput = document.querySelector("#search-input");
 const notesList = document.querySelector("#notes-list");
 const errorMessage = document.querySelector("#error-message");
 const noteCount = document.querySelector("#note-count");
-
+const clearAllBtn = document.querySelector("#clear-all");
 const MAX_LENGTH = 200;
 const STORAGE_KEY = "quicknotes-notes";
 
@@ -103,6 +103,17 @@ function render() {
 
   // The count always shows the total number of saved notes
   noteCount.textContent = getCountMessage(notes.length);
+  // Clear all notes (after confirmation)
+clearAllBtn.addEventListener("click", function () {
+  if (notes.length === 0) {
+    return;
+  }
+  if (confirm("Delete all notes?")) {
+    notes = [];
+    saveNotes();
+    render();
+  }
+});
 }
 
 // Handle form submit
@@ -141,5 +152,7 @@ form.addEventListener("submit", function (event) {
 
 // Search as the user types
 searchInput.addEventListener("input", render);
+
+
 
 render();

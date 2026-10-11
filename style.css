@@ -169,7 +169,14 @@ button:hover {
 .category-study {
   border-left-color: #2563eb; /* blue */
 }
+#clear-all {
+  background: #dc2626;
+  margin-bottom: 0.75rem;
+}
 
+#clear-all:hover {
+  background: #b91c1c;
+}
 /* Footer */
 footer {
   text-align: center;
