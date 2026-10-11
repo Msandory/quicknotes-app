@@ -2,14 +2,35 @@
 const form = document.querySelector("#note-form");
 const noteInput = document.querySelector("#note-input");
 const categorySelect = document.querySelector("#note-category");
+const searchInput = document.querySelector("#search-input");
 const notesList = document.querySelector("#notes-list");
 const errorMessage = document.querySelector("#error-message");
 const noteCount = document.querySelector("#note-count");
 
 const MAX_LENGTH = 200;
+const STORAGE_KEY = "quicknotes-notes";
 
 // Notes are stored as an array of objects
-let notes = [];
+let notes = loadNotes();
+
+// Load notes from localStorage (falls back to an empty array)
+function loadNotes() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === null) {
+      return [];
+    }
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+// Save notes to localStorage
+function saveNotes() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
 
 // Build the count message for zero, one and many notes
 function getCountMessage(total) {
@@ -27,14 +48,29 @@ function deleteNote(id) {
   notes = notes.filter(function (note) {
     return note.id !== id;
   });
+  saveNotes();
   render();
 }
 
-// Rebuild the list from the array
+// Rebuild the list from the array (filtered by the search box)
 function render() {
   notesList.innerHTML = ""; // clears the list only; no user text goes through innerHTML
 
-  notes.forEach(function (note) {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  const visibleNotes = notes.filter(function (note) {
+    return note.text.toLowerCase().includes(searchTerm);
+  });
+
+  // Search found nothing (but there are notes)
+  if (notes.length > 0 && visibleNotes.length === 0) {
+    const li = document.createElement("li");
+    li.className = "empty-message";
+    li.textContent = "No notes match your search.";
+    notesList.append(li);
+  }
+
+  visibleNotes.forEach(function (note) {
     const li = document.createElement("li");
     li.className = "note-card category-" + note.category.toLowerCase();
 
@@ -65,6 +101,7 @@ function render() {
     notesList.append(li);
   });
 
+  // The count always shows the total number of saved notes
   noteCount.textContent = getCountMessage(notes.length);
 }
 
@@ -95,10 +132,14 @@ form.addEventListener("submit", function (event) {
   };
 
   notes.push(note);
+  saveNotes();
   render();
 
   noteInput.value = "";
   noteInput.focus();
 });
+
+// Search as the user types
+searchInput.addEventListener("input", render);
 
 render();
